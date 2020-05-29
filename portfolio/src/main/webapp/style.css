@@ -11,3 +11,34 @@
 body {
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif
 }
+
+.content-container {
+  max-width: 650px;
+}
+
+
+p {
+ text-align: justify;
+}
+
+div {
+  width: 800px;
+  border: 25px solid;
+  border-color: rgba(50, 100, 230, 0.0);
+  padding: 50px;
+  margin: 0 50px;
+}
+
+
+table {
+  margin-left:auto;
+  margin-right:auto;
+}
+
+th {
+  text-align: left;
+}
+th, td {
+  padding: 5px 12px;
+}
+
