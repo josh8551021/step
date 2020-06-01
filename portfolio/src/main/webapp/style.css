@@ -31,15 +31,16 @@ div {
 
 
 table {
-  margin-left:auto;
-  margin-right:auto;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 th {
   text-align: left;
 }
 
-th, td {
+th,
+td {
   padding: 5px 12px;
 }
 
@@ -62,12 +63,12 @@ figure figcaption {
 
 .gallery-image {
   max-height: 240px;
-  height:auto;
-  width:auto;
-  padding: 0px;
+  height: auto;
+  width: auto;
+  padding: 0;
   margin-left: auto;
   margin-right: auto;
 }
 figure p {
-  text-align:center;
+  text-align: center;
 }
