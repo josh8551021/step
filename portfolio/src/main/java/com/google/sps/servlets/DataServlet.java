@@ -14,6 +14,9 @@
 
 package com.google.sps.servlets;
 
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
 import com.google.gson.Gson;
 
 import java.io.IOException;
@@ -42,8 +45,13 @@ public class DataServlet extends HttpServlet {
 
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String commentData = getNewComment(request);
-    messages.add(commentData);
+    String commentText = request.getParameter("comment-input");
+    Entity commentEntity = createCommentEntity(commentText);
+
+    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    datastore.put(commentEntity);
+
+    messages.add(commentText);
     response.sendRedirect("/index.html");
   }
 
@@ -52,7 +60,16 @@ public class DataServlet extends HttpServlet {
     return gson.toJson(messages);
   }
 
-  private String getNewComment(HttpServletRequest request) {
-    return request.getParameter("comment-input");
+  /**
+   * This function creates a new Datastore Entity to hold the most recent comment.
+   */
+  private Entity createCommentEntity(String commentText) {
+    long timestamp = System.currentTimeMillis();
+
+    Entity commentEntity = new Entity("Comment");
+    commentEntity.setProperty("text", commentText);
+    commentEntity.setProperty("timestamp", timestamp);
+    
+    return commentEntity;
   }
 }
