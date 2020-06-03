@@ -26,3 +26,26 @@ function addRandomGreeting() {
   const greetingContainer = document.getElementById('greeting-container');
   greetingContainer.innerText = greeting;
 }
+
+/**
+ * Fetches comments data from the server and uploads it to the portfolio main
+ * page.
+ */
+function getComments() {
+  fetch('/data').then(response => response.json()).then((comments) => {
+    let commentsContainer = document.getElementById('comments-container');
+    comments.forEach((comment) => {
+      // Create HTML for comment.
+      let commentP = document.createElement("p");
+      commentP.innerHTML = comment;
+
+      // Add comment paragraph to comments-box div
+      let commentDiv = document.createElement("div");
+      commentDiv.classList.add("comments-box");
+      commentDiv.appendChild(commentP);
+
+      // Add comment div to container.
+      commentsContainer.appendChild(commentDiv);
+    });
+  });
+}

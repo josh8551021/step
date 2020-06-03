@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="style.css">
     <script src="script.js"></script>
   </head>
-  <body>
+  <body onload="getComments()">
     <div id="content">
       <h1 class="content-container">My Portfolio</h1>
       <h2>Introduction</h2>
@@ -60,6 +60,11 @@
         <p>Click here to get a random message:</p>
         <button onclick="addRandomGreeting()">Hello</button>
         <div id="greeting-container"></div>
+      </div>
+
+      <div class="content-container">
+        <h2>Comments</h2>
+        <div id="comments-container"></div>
       </div>
     </div>
   </body>
