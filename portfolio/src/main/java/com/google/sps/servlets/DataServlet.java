@@ -14,10 +14,14 @@
 
 package com.google.sps.servlets;
 
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
 import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -27,24 +31,45 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet("/data")
 public class DataServlet extends HttpServlet {
 
-  ArrayList<String> messages;
+  private List<String> messages;
 
   public DataServlet() {
     messages = new ArrayList<>();
-    messages.add("Hello, world!");
-    messages.add("Happy coding!");
-    messages.add("LGTM");
   }
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     response.setContentType("text/html;");
     response.getWriter().println(convertToJson(messages));
-
   }
 
-  private String convertToJson(ArrayList<String> messages) {
+  @Override
+  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    String commentText = request.getParameter("comment-input");
+    Entity commentEntity = createCommentEntity(commentText);
+
+    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    datastore.put(commentEntity);
+
+    messages.add(commentText);
+    response.sendRedirect("/index.html");
+  }
+
+  private String convertToJson(List<String> messages) {
     Gson gson = new Gson();
     return gson.toJson(messages);
+  }
+
+  /**
+   * This function creates a new Datastore Entity to hold the most recent comment.
+   */
+  private Entity createCommentEntity(String commentText) {
+    long timestamp = System.currentTimeMillis();
+
+    Entity commentEntity = new Entity("Comment");
+    commentEntity.setProperty("text", commentText);
+    commentEntity.setProperty("timestamp", timestamp);
+    
+    return commentEntity;
   }
 }
