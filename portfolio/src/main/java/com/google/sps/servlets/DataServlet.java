@@ -17,6 +17,9 @@ package com.google.sps.servlets;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.PreparedQuery;
+import com.google.appengine.api.datastore.Query;
+
 import com.google.gson.Gson;
 
 import java.io.IOException;
@@ -31,14 +34,11 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet("/data")
 public class DataServlet extends HttpServlet {
 
-  private List<String> messages;
-
-  public DataServlet() {
-    messages = new ArrayList<>();
-  }
-
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    List<String> messages = queryComments(datastore);
+
     response.setContentType("text/html;");
     response.getWriter().println(convertToJson(messages));
   }
@@ -51,7 +51,6 @@ public class DataServlet extends HttpServlet {
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     datastore.put(commentEntity);
 
-    messages.add(commentText);
     response.sendRedirect("/index.html");
   }
 
@@ -60,9 +59,6 @@ public class DataServlet extends HttpServlet {
     return gson.toJson(messages);
   }
 
-  /**
-   * This function creates a new Datastore Entity to hold the most recent comment.
-   */
   private Entity createCommentEntity(String commentText) {
     long timestamp = System.currentTimeMillis();
 
@@ -71,5 +67,17 @@ public class DataServlet extends HttpServlet {
     commentEntity.setProperty("timestamp", timestamp);
     
     return commentEntity;
+  }
+
+  private List<String> queryComments(DatastoreService datastore) {
+    Query query = new Query("Comment").addSort("timestamp",
+        Query.SortDirection.ASCENDING);
+    PreparedQuery results = datastore.prepare(query);
+
+    List<String> comments = new ArrayList<>();
+    results.asIterable().forEach(commentEntity ->
+        comments.add(commentEntity.getProperty("text").toString()));
+
+    return comments;
   }
 }
