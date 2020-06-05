@@ -64,6 +64,13 @@
 
       <div class="content-container">
         <h2>Comments</h2>
+        Num Comments:
+        <select name="num-comments" id="num-comments" onchange="getComments()">
+          <option value="5">5</option>
+          <option value="10" selected="selected">10</option>
+          <option value="20">20</option>
+          <option value="50">50</option>
+        </select>
         <div id="comments-container"></div>
       </div>
 
