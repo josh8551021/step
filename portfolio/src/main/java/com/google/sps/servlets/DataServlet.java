@@ -18,7 +18,6 @@ import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
-import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 
 import com.google.gson.Gson;
@@ -45,7 +44,8 @@ public class DataServlet extends HttpServlet {
     }
 
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    List<String> messages = queryComments(datastore, numComments);
+    List<String> messages = getCommentEntities(datastore, numComments).stream().map(
+        entity -> entity.getProperty("text").toString()).collect(Collectors.toList());
 
     response.setContentType("text/html;");
     response.getWriter().println(convertToJson(messages));
@@ -89,12 +89,15 @@ public class DataServlet extends HttpServlet {
     return commentEntity;
   }
 
-  private List<String> queryComments(DatastoreService datastore, int numComments) {
+  protected static List<Entity> getCommentEntities(DatastoreService datastore) {
     Query query = new Query("Comment").addSort("timestamp",
         Query.SortDirection.ASCENDING);
-    PreparedQuery results = datastore.prepare(query);
+    return datastore.prepare(query).asList(FetchOptions.Builder.withDefaults());
+  }
 
-    return results.asList(FetchOptions.Builder.withLimit(numComments)).stream().map(entity ->
-      entity.getProperty("text").toString()).collect(Collectors.toList());
+  protected static List<Entity> getCommentEntities(DatastoreService datastore, int numComments) {
+    Query query = new Query("Comment").addSort("timestamp",
+        Query.SortDirection.ASCENDING);
+    return datastore.prepare(query).asList(FetchOptions.Builder.withLimit(numComments));
   }
 }
