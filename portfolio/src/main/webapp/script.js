@@ -59,3 +59,13 @@ function getComments() {
     });
   });
 }
+
+function deleteComments() {
+  let doDeleteComments = confirm('Are you sure you want to delete all of the comments?');
+
+  if (doDeleteComments == true) {
+    fetch('/delete-data', {
+      method:'POST'
+    }).then(response => response.json).then(_ => getComments());
+  }
+}
