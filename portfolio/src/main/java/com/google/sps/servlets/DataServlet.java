@@ -17,14 +17,15 @@ package com.google.sps.servlets;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 
 import com.google.gson.Gson;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -34,13 +35,32 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet("/data")
 public class DataServlet extends HttpServlet {
 
+  private static final int DEFAULT_MESSAGES = 10;
+
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    int numComments = getNumComments(request);
+    if (numComments == -1) {
+      numComments = DEFAULT_MESSAGES;
+    }
+
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    List<String> messages = queryComments(datastore);
+    List<String> messages = queryComments(datastore, numComments);
 
     response.setContentType("text/html;");
     response.getWriter().println(convertToJson(messages));
+  }
+
+  private int getNumComments(HttpServletRequest request) {
+    String numCommentsString = request.getParameter("num-comments");
+    int numComments;
+    try {
+      numComments = Integer.parseInt(numCommentsString);
+    } catch (NumberFormatException e) {
+      System.err.println("Could not convert to int: " + numCommentsString);
+      return -1;
+    }
+    return numComments;
   }
 
   @Override
@@ -69,15 +89,12 @@ public class DataServlet extends HttpServlet {
     return commentEntity;
   }
 
-  private List<String> queryComments(DatastoreService datastore) {
+  private List<String> queryComments(DatastoreService datastore, int numComments) {
     Query query = new Query("Comment").addSort("timestamp",
         Query.SortDirection.ASCENDING);
     PreparedQuery results = datastore.prepare(query);
 
-    List<String> comments = new ArrayList<>();
-    results.asIterable().forEach(commentEntity ->
-        comments.add(commentEntity.getProperty("text").toString()));
-
-    return comments;
+    return results.asList(FetchOptions.Builder.withLimit(numComments)).stream().map(entity ->
+      entity.getProperty("text").toString()).collect(Collectors.toList());
   }
 }

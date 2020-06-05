@@ -32,16 +32,26 @@ function addRandomGreeting() {
  * page.
  */
 function getComments() {
-  fetch('/data').then(response => response.json()).then((comments) => {
+  // Extract the number of comments selected from the dropdown.
+  let numCommentsSelect = document.getElementById('num-comments');
+  let numCommentsString = numCommentsSelect.options[numCommentsSelect.selectedIndex].value;
+
+  // Create fetch string and perform GET request.
+  let fetchString = '/data?num-comments=' + numCommentsString;
+  fetch(fetchString).then(response => response.json()).then((comments) => {
     let commentsContainer = document.getElementById('comments-container');
+
+    // Reset comments continer.
+    commentsContainer.innerHTML = '';
+
     comments.forEach((comment) => {
       // Create HTML for comment.
       let commentP = document.createElement("p");
       commentP.innerHTML = comment;
 
       // Add comment paragraph to comments-box div
-      let commentDiv = document.createElement("div");
-      commentDiv.classList.add("comments-box");
+      let commentDiv = document.createElement('div');
+      commentDiv.classList.add('comments-box');
       commentDiv.appendChild(commentP);
 
       // Add comment div to container.
