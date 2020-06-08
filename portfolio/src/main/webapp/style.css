@@ -90,3 +90,16 @@ td {
 figure {
   text-align: center;
 }
+
+textarea {
+  background-color: #eeeeee;
+  outline: none;
+  border: 0;
+  resize: none;
+  font-family: Arial, Helvetica, sans-serif;
+  width: 100%;
+  overflow: auto;
+  height: 100px;
+  border-radius: 8px;
+  padding: 5px;
+}
