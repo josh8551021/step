@@ -49,3 +49,31 @@ function getComments() {
     });
   });
 }
+
+google.charts.load('current', {'packages':['corechart']});
+google.charts.setOnLoadCallback(drawVisitDataChart);
+
+function drawVisitDataChart() {
+  const data = new google.visualization.DataTable();
+  data.addColumn('string', 'Day of Week');
+  data.addColumn('number', 'Page Visits');
+  data.addRows([
+    ['Sunday', 40],
+    ['Monday', 55],
+    ['Tuesday', 30],
+    ['Wednesday', 20],
+    ['Thursday', 25],
+    ['Friday', 65],
+    ['Saturday', 50]
+  ]);
+
+  const options = {
+    'title': 'Number of Page Visits by Day of Week',
+    'width': 600,
+    'height': 500
+  };
+
+  const chart = new google.visualization.BarChart(
+    document.getElementById('visit-data-container'));
+  chart.draw(data, options);
+}
