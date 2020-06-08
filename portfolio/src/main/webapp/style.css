@@ -39,8 +39,8 @@ dl {
 }
 
 dt {
-  font-weight: bold;
   float: left;
+  font-weight: bold;
   margin: 0;
   padding: 0;
   width: 35%;
@@ -93,15 +93,15 @@ figure {
 
 textarea {
   background-color: rgba(102, 153, 255, 0.05);
-  outline: none;
-  border: 0;
-  resize: none;
-  font-family: Arial, Helvetica, sans-serif;
-  width: 98%;
-  overflow: auto;
-  height: 100px;
+  border: none;
   border-radius: 8px;
+  font-family: Arial, Helvetica, sans-serif;
+  height: 100px;
+  outline: none;
+  overflow: auto;
   padding: 5px;
+  resize: none;
+  width: 98%;
 }
 
 #num-comments {
@@ -111,10 +111,10 @@ textarea {
 button {
   background-color: rgba(102, 153, 255, 0.2);
   border: none;
+  border-radius: 6px;
+  font-size: 14px;
   padding: 5px 15px;
   text-align: center;
-  font-size: 14px;
-  border-radius: 6px;
 }
 
 #delete-comments-btn {
@@ -122,8 +122,8 @@ button {
 }
 
 #comments-container {
-  width: 100%;
   margin-top: 20 px;
+  width: 100%;
 }
 
 .comments-box:nth-child(even) {
@@ -134,8 +134,8 @@ button {
 .comments-box {
   border: 1px solid #ddd;
   border-radius: 6px;
-  margin: 10px 0;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 14px;
+  margin: 10px 0;
   padding: 0 8px;
 }
