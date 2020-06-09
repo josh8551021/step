@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 public class DataServlet extends HttpServlet {
 
   private static final int DEFAULT_MESSAGES = 10;
+  private static final int MAX_MESSAGES = 50;
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -42,6 +43,8 @@ public class DataServlet extends HttpServlet {
     if (numComments == -1) {
       numComments = DEFAULT_MESSAGES;
     }
+
+    numComments = Math.min(numComments, MAX_MESSAGES);
 
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     List<String> messages = getCommentEntities(datastore, numComments).stream().map(

@@ -37,8 +37,9 @@ function getComments() {
   let numCommentsString = numCommentsSelect.options[numCommentsSelect.selectedIndex].value;
 
   // Create fetch string and perform GET request.
-  let fetchString = '/data?num-comments=' + numCommentsString;
-  fetch(fetchString).then(response => response.json()).then((comments) => {
+  let searchParams = new URLSearchParams();
+  searchParams.append('num-comments', encodeURIComponent(numCommentsString));
+  fetch('/data?' + searchParams).then(response => response.json()).then((comments) => {
     let commentsContainer = document.getElementById('comments-container');
 
     // Reset comments continer.
