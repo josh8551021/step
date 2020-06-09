@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>My Portfolio</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
     <script src="script.js"></script>
   </head>
   <body onload="getComments()">
@@ -64,8 +65,6 @@
 
       <div class="content-container">
         <h2>Comments</h2>
-        <button onclick="deleteComments()">Delete comments</button>
-        <br/>
         Number of Comments:
         <select name="num-comments" id="num-comments" onchange="getComments()">
           <option value="5">5</option>
@@ -73,6 +72,7 @@
           <option value="20">20</option>
           <option value="50">50</option>
         </select>
+        <button id="delete-comments-btn" onclick="deleteComments()">Delete Comments</button>
         <div id="comments-container"></div>
       </div>
 
@@ -82,6 +82,8 @@
           <input type="submit" />
         </form>
       </div>
+
+      <div id="visit-data-container"></div>
     </div>
   </body>
 </html>

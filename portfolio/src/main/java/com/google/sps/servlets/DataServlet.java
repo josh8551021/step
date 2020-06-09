@@ -43,6 +43,7 @@ public class DataServlet extends HttpServlet {
     if (numComments == -1) {
       numComments = DEFAULT_MESSAGES;
     }
+
     numComments = Math.min(numComments, MAX_MESSAGES);
 
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();

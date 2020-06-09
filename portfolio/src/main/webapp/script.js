@@ -61,6 +61,10 @@ function getComments() {
   });
 }
 
+/**
+ * Sends request to delete all comments if user confirms that that is the action
+ * they want to take.
+ */
 function deleteComments() {
   let doDeleteComments = confirm('Are you sure you want to delete all of the comments?');
 
@@ -69,4 +73,33 @@ function deleteComments() {
       method:'POST'
     }).then(response => response.json).then(_ => getComments());
   }
+}
+
+// Code for adding chart using Google Charts API
+google.charts.load('current', {'packages':['corechart']});
+google.charts.setOnLoadCallback(drawVisitDataChart);
+
+function drawVisitDataChart() {
+  const data = new google.visualization.DataTable();
+  data.addColumn('string', 'Day of Week');
+  data.addColumn('number', 'Page Visits');
+  data.addRows([
+    ['Sunday', 40],
+    ['Monday', 55],
+    ['Tuesday', 30],
+    ['Wednesday', 20],
+    ['Thursday', 25],
+    ['Friday', 65],
+    ['Saturday', 50]
+  ]);
+
+  const options = {
+    'title': 'Number of Page Visits by Day of Week',
+    'width': 600,
+    'height': 500
+  };
+
+  const chart = new google.visualization.BarChart(
+    document.getElementById('visit-data-container'));
+  chart.draw(data, options);
 }
