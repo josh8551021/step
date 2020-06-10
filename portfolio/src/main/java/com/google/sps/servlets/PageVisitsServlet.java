@@ -7,21 +7,24 @@ import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
+import com.google.gson.Gson;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.Calendar;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @WebServlet("/visit")
 public class PageVisitsServlet extends HttpServlet {
 
   private static final String VISITS_TODAY = "Visits Today";
-
   private static final String VISITS = "visits";
   private static final String DATE = "date";
 
@@ -33,6 +36,35 @@ public class PageVisitsServlet extends HttpServlet {
 
     response.setContentType("text/html");
     response.getWriter().println("200 OK");
+  }
+
+  @Override
+  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    // TODO: Process request max-days data
+    List<Entity> visitEntities = extractEntitiesByDate();
+    Map<LocalDate, Long> visitsByDate = mapVisitsPerDay(visitEntities);
+
+    Gson gson = new Gson();
+    String jsonString = gson.toJson(visitsByDate);
+
+    response.setContentType("application/json");
+    response.getWriter().println(jsonString);
+  }
+
+  private Map<LocalDate, Long> mapVisitsPerDay(List<Entity> visitEntities) {
+    Map<LocalDate, Long> visitsPerDayMapping = new LinkedHashMap<>();
+    visitEntities.forEach(entity -> {
+      LocalDate date = LocalDate.parse((String) entity.getProperty(DATE));
+      long numberOfVisits = (long) entity.getProperty(VISITS);
+      visitsPerDayMapping.put(date, numberOfVisits);
+    });
+    return visitsPerDayMapping;
+  }
+
+  private List<Entity> extractEntitiesByDate() {
+    Query query = new Query(VISITS_TODAY).addSort(
+        "timestamp", Query.SortDirection.ASCENDING);
+    return datastore.prepare(query).asList(FetchOptions.Builder.withDefaults());
   }
 
   private void incrementPageVisit(DatastoreService datastore) {
@@ -97,6 +129,5 @@ public class PageVisitsServlet extends HttpServlet {
       datastore.delete(entity2Key);
       return entity1;
     }).orElse(entities.get(0));
-
   }
 }
