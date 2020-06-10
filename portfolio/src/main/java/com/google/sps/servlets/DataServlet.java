@@ -37,6 +37,8 @@ public class DataServlet extends HttpServlet {
   private static final int DEFAULT_MESSAGES = 10;
   private static final int MAX_MESSAGES = 50;
 
+  DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     int numComments = getNumComments(request);
@@ -45,8 +47,6 @@ public class DataServlet extends HttpServlet {
     }
 
     numComments = Math.min(numComments, MAX_MESSAGES);
-
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     List<String> messages = getCommentEntities(datastore, numComments).stream().map(
         entity -> entity.getProperty("text").toString()).collect(Collectors.toList());
 
@@ -71,7 +71,7 @@ public class DataServlet extends HttpServlet {
     String commentText = request.getParameter("comment-input");
     Entity commentEntity = createCommentEntity(commentText);
 
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    //datastore = DatastoreServiceFactory.getDatastoreService();
     datastore.put(commentEntity);
 
     response.sendRedirect("/index.html");

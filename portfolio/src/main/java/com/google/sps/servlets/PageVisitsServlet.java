@@ -25,9 +25,10 @@ public class PageVisitsServlet extends HttpServlet {
   private static final String VISITS = "visits";
   private static final String DATE = "date";
 
+  private final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) {
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     incrementPageVisit(datastore);
   }
 
@@ -35,7 +36,7 @@ public class PageVisitsServlet extends HttpServlet {
     LocalDate today = LocalDate.now(ZoneOffset.UTC);
     Entity todayVisitsEntity = getPageVisitsEntity(datastore, today);
     long visitsToday = (long) todayVisitsEntity.getProperty(VISITS);
-    todayVisitsEntity.setProperty(VISITS, visitsToday + 1);
+    todayVisitsEntity.setProperty(VISITS, visitsToday + 1L);
 
     datastore.put(todayVisitsEntity);
   }
@@ -48,7 +49,7 @@ public class PageVisitsServlet extends HttpServlet {
 
     visitsEntity.setProperty(DATE, today.toString());
     visitsEntity.setProperty("dayOfWeek", calendar.get(Calendar.DAY_OF_WEEK));
-    visitsEntity.setProperty(VISITS, 1);
+    visitsEntity.setProperty(VISITS, 1L);
     visitsEntity.setProperty("timestamp", timestamp);
 
     return visitsEntity;
