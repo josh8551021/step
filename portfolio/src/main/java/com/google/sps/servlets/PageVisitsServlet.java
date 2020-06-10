@@ -34,7 +34,7 @@ public class PageVisitsServlet extends HttpServlet {
 
   private void incrementPageVisit(DatastoreService datastore) {
     LocalDate today = LocalDate.now(ZoneOffset.UTC);
-    Entity todayVisitsEntity = getPageVisitsEntity(datastore, today);
+    Entity todayVisitsEntity = getPageVisitsEntity(today);
     long visitsToday = (long) todayVisitsEntity.getProperty(VISITS);
     todayVisitsEntity.setProperty(VISITS, visitsToday + 1L);
 
@@ -55,7 +55,7 @@ public class PageVisitsServlet extends HttpServlet {
     return visitsEntity;
   }
 
-  private Entity getPageVisitsEntity(DatastoreService datastore, LocalDate date) {
+  private Entity getPageVisitsEntity(LocalDate date) {
     Query.Filter filter = new Query.FilterPredicate(
         DATE,
         Query.FilterOperator.EQUAL,
@@ -70,7 +70,7 @@ public class PageVisitsServlet extends HttpServlet {
     } catch (PreparedQuery.TooManyResultsException e) {
       // Collapse into single entity per day.
       System.err.println("More than none entity returned for a given date.");
-      entity = collapseDateEntities(preparedQuery, datastore);
+      entity = collapseDateEntities(preparedQuery);
     }
 
     // No results returned.
@@ -81,7 +81,7 @@ public class PageVisitsServlet extends HttpServlet {
     return entity;
   }
 
-  private Entity collapseDateEntities(PreparedQuery preparedQuery, DatastoreService datastore) {
+  private Entity collapseDateEntities(PreparedQuery preparedQuery) {
     List<Entity> entities = preparedQuery.asList(FetchOptions.Builder.withDefaults());
 
     // Fold entries into single element.
