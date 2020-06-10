@@ -28,8 +28,11 @@ public class PageVisitsServlet extends HttpServlet {
   private final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
   @Override
-  public void doPost(HttpServletRequest request, HttpServletResponse response) {
+  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     incrementPageVisit(datastore);
+
+    response.setContentType("text/html");
+    response.getWriter().println("200 OK");
   }
 
   private void incrementPageVisit(DatastoreService datastore) {
