@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,9 @@ public class PageVisitsServlet extends HttpServlet {
   private static final String VISITS_TODAY = "Visits Today";
   private static final String VISITS = "visits";
   private static final String DATE = "date";
+  private static final String DAY_OF_WEEK = "dayOfWeek";
+  private static final int CHART_BY_DATE = 0;
+  private static final int CHART_BY_WEEKDAY = 1;
 
   private final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
@@ -41,14 +45,65 @@ public class PageVisitsServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     // TODO: Process request max-days data
+    
+    int choice = processGetRequest(request);
+
+    String chartDataJson;
+    if (choice == CHART_BY_WEEKDAY) {
+      chartDataJson = getDayOfWeekDataJson();
+    } else {
+      chartDataJson = getDateDataJson();
+    }
+
+    response.setContentType("application/json");
+    response.getWriter().println(chartDataJson);
+  }
+
+  private String getDayOfWeekDataJson() {
+    List<Entity> visitEntities = extractEntitiesByDate();
+    Map<Integer, Long> visitsByWeekday = mapVisitsPerWeekDay(visitEntities);
+
+    Gson gson = new Gson();
+    return gson.toJson(visitsByWeekday);
+  }
+
+  private String getDateDataJson() {
     List<Entity> visitEntities = extractEntitiesByDate();
     Map<LocalDate, Long> visitsByDate = mapVisitsPerDay(visitEntities);
 
     Gson gson = new Gson();
-    String jsonString = gson.toJson(visitsByDate);
+    return gson.toJson(visitsByDate);
+  }
 
-    response.setContentType("application/json");
-    response.getWriter().println(jsonString);
+  private int processGetRequest(HttpServletRequest request) {
+    String chartChoice = request.getParameter("ChartChoice");
+    int chartChoiceInt = CHART_BY_DATE;
+    try {
+      chartChoiceInt = Integer.parseInt(chartChoice);
+    } catch(NumberFormatException e) {
+      System.err.println("Could not convert to int: " + chartChoice);
+    }
+
+    return chartChoiceInt;
+  }
+
+  private Map<Integer, Long> mapVisitsPerWeekDay(List<Entity> visitEntities) {
+
+    Map<Integer, Long> visitsByDayOfWeek = new HashMap<>();
+    visitsByDayOfWeek.put(Calendar.SUNDAY, 0L);
+    visitsByDayOfWeek.put(Calendar.MONDAY, 0L);
+    visitsByDayOfWeek.put(Calendar.TUESDAY, 0L);
+    visitsByDayOfWeek.put(Calendar.WEDNESDAY, 0L);
+    visitsByDayOfWeek.put(Calendar.THURSDAY, 0L);
+    visitsByDayOfWeek.put(Calendar.FRIDAY, 0L);
+    visitsByDayOfWeek.put(Calendar.SATURDAY, 0L);
+
+    visitEntities.forEach(entity -> {
+      int dayOfWeek = (int) entity.getProperty(DAY_OF_WEEK);
+      long addedVisits = (long) entity.getProperty(VISITS);
+      visitsByDayOfWeek.computeIfPresent(dayOfWeek, (day, visits) -> visits + addedVisits);
+    });
+    return visitsByDayOfWeek;
   }
 
   private Map<LocalDate, Long> mapVisitsPerDay(List<Entity> visitEntities) {
@@ -83,7 +138,7 @@ public class PageVisitsServlet extends HttpServlet {
     Entity visitsEntity = new Entity(VISITS_TODAY);
 
     visitsEntity.setProperty(DATE, today.toString());
-    visitsEntity.setProperty("dayOfWeek", calendar.get(Calendar.DAY_OF_WEEK));
+    visitsEntity.setProperty(DAY_OF_WEEK, calendar.get(Calendar.DAY_OF_WEEK));
     visitsEntity.setProperty(VISITS, 1L);
     visitsEntity.setProperty("timestamp", timestamp);
 
