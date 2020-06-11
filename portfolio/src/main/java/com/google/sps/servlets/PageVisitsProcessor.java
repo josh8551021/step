@@ -69,7 +69,7 @@ public class PageVisitsProcessor {
   }
 
   public int processGetRequest(HttpServletRequest request) {
-    String chartChoice = request.getParameter("ChartChoice");
+    String chartChoice = request.getParameter("chart-choice");
     int chartChoiceInt = CHART_BY_DATE;
     try {
       chartChoiceInt = Integer.parseInt(chartChoice);
@@ -92,7 +92,7 @@ public class PageVisitsProcessor {
     visitsByDayOfWeek.put(Calendar.SATURDAY, 0L);
 
     visitEntities.forEach(entity -> {
-      int dayOfWeek = (int) entity.getProperty(DAY_OF_WEEK);
+      int dayOfWeek = Integer.parseInt(entity.getProperty(DAY_OF_WEEK).toString());
       long addedVisits = (long) entity.getProperty(VISITS);
       visitsByDayOfWeek.computeIfPresent(dayOfWeek, (day, visits) -> visits + addedVisits);
     });
