@@ -33,7 +33,7 @@ public class PageVisitsProcessor {
   private static final int CHART_BY_DATE = 0;
   private static final int CHART_BY_WEEKDAY = 1;
 
-  final DatastoreService datastore;
+  private final DatastoreService datastore;
 
   PageVisitsProcessor() {
     this.datastore = DatastoreServiceFactory.getDatastoreService();
@@ -52,7 +52,7 @@ public class PageVisitsProcessor {
     return chartDataJson;
   }
 
-  public String getDayOfWeekDataJson() {
+  private String getDayOfWeekDataJson() {
     List<Entity> visitEntities = extractEntitiesByDate();
     Map<Integer, Long> visitsByWeekday = mapVisitsPerWeekDay(visitEntities);
 
@@ -60,7 +60,7 @@ public class PageVisitsProcessor {
     return gson.toJson(visitsByWeekday);
   }
 
-  public String getDateDataJson() {
+  private String getDateDataJson() {
     List<Entity> visitEntities = extractEntitiesByDate();
     Map<LocalDate, Long> visitsByDate = mapVisitsPerDay(visitEntities);
 
@@ -68,7 +68,7 @@ public class PageVisitsProcessor {
     return gson.toJson(visitsByDate);
   }
 
-  public int processGetRequest(HttpServletRequest request) {
+  private int processGetRequest(HttpServletRequest request) {
     String chartChoice = request.getParameter("chart-choice");
     int chartChoiceInt = CHART_BY_DATE;
     try {
