@@ -68,7 +68,7 @@ function getComments() {
 function deleteComments() {
   let doDeleteComments = confirm('Are you sure you want to delete all of the comments?');
 
-  if (doDeleteComments == true) {
+  if (doDeleteComments === true) {
     fetch('/delete-data', {
       method:'POST'
     }).then(response => response.json()).then(_ => getComments());
@@ -115,7 +115,7 @@ function drawVisitDayOfWeekChart() {
   searchParams.append('chart-choice', encodeURIComponent('1'));
   fetch('/visit?' + searchParams).then(response => response.json())
     .then((dailyVisits) => {
-      const data = new google.visualization.DataTable
+      const data = new google.visualization.DataTable();
       data.addColumn('string', 'Day of Week');
       data.addColumn('number', 'Page Visits');
       data.addRows(
