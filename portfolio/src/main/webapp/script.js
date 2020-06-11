@@ -78,34 +78,64 @@ function deleteComments() {
 function countVisit() {
     fetch('/visit', {
       method:'POST'
-    }).then(response => response.json());
+    }).then(response => response.json()).then(data => console.log(data));
 }
 
 // Code for adding chart using Google Charts API
 google.charts.load('current', {'packages':['corechart']});
-google.charts.setOnLoadCallback(drawVisitDataChart);
+google.charts.setOnLoadCallback(drawVisitDayOfWeekChart);
+google.charts.setOnLoadCallback(drawVisitDateChart);
 
-function drawVisitDataChart() {
-  const data = new google.visualization.DataTable();
-  data.addColumn('string', 'Day of Week');
-  data.addColumn('number', 'Page Visits');
-  data.addRows([
-    ['Sunday', 40],
-    ['Monday', 55],
-    ['Tuesday', 30],
-    ['Wednesday', 20],
-    ['Thursday', 25],
-    ['Friday', 65],
-    ['Saturday', 50]
-  ]);
+function drawVisitDateChart() {
+  let searchParams = new URLSearchParams();
+  searchParams.append('chart-choice', encodeURIComponent('0'));
+  fetch('/visit?' + searchParams).then(response => response.json())
+    .then((dailyVisits) => {
+      const data = new google.visualization.DataTable();
+      data.addColumn('string', 'date');
+      data.addColumn('number', 'visits');
+      Object.keys(dailyVisits).forEach((date) => {
+        data.addRow([date, dailyVisits[date]]);
+      });
 
-  const options = {
-    'title': 'Number of Page Visits by Day of Week',
-    'width': 600,
-    'height': 500
-  };
+      const options = {
+        'title': 'Page Visits per Day',
+        'width':600,
+        'height':500
+      };
 
-  const chart = new google.visualization.BarChart(
-    document.getElementById('visit-data-container'));
-  chart.draw(data, options);
+      const chart = new google.visualization.LineChart(
+          document.getElementById('visit-date-container'));
+      chart.draw(data, options);
+    });
+}
+
+function drawVisitDayOfWeekChart() {
+  let searchParams = new URLSearchParams();
+  searchParams.append('chart-choice', encodeURIComponent('1'));
+  fetch('/visit?' + searchParams).then(response => response.json())
+    .then((dailyVisits) => {
+      const data = new google.visualization.DataTable
+      data.addColumn('string', 'Day of Week');
+      data.addColumn('number', 'Page Visits');
+      data.addRows(
+        [['Sunday', dailyVisits['1']],
+        ['Monday', dailyVisits['2']],
+        ['Tuesday', dailyVisits['3']],
+        ['Wednesday', dailyVisits['4']],
+        ['Thursday', dailyVisits['5']],
+        ['Friday', dailyVisits['6']],
+        ['Saturday', dailyVisits['7']]]
+      );
+      
+      const options = {
+        'title': 'Number of Page Visits by Day of Week',
+        'width': 600,
+        'height': 500
+      };
+    
+      const chart = new google.visualization.BarChart(
+        document.getElementById('visit-day-week-container'));
+      chart.draw(data, options);
+    });
 }
