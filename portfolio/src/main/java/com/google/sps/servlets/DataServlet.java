@@ -70,8 +70,6 @@ public class DataServlet extends HttpServlet {
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String commentText = request.getParameter("comment-input");
     Entity commentEntity = createCommentEntity(commentText);
-
-    //datastore = DatastoreServiceFactory.getDatastoreService();
     datastore.put(commentEntity);
 
     response.sendRedirect("/index.html");
