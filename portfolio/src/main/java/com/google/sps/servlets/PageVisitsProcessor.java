@@ -92,7 +92,7 @@ public class PageVisitsProcessor {
     visitsByDayOfWeek.put(Calendar.SATURDAY, 0L);
 
     visitEntities.forEach(entity -> {
-      int dayOfWeek = Integer.parseInt(entity.getProperty(DAY_OF_WEEK).toString());
+      int dayOfWeek = (int) (long) entity.getProperty(DAY_OF_WEEK);
       long addedVisits = (long) entity.getProperty(VISITS);
       visitsByDayOfWeek.computeIfPresent(dayOfWeek, (day, visits) -> visits + addedVisits);
     });
