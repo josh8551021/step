@@ -26,9 +26,14 @@ import java.util.Map;
 public class PageVisitsServlet extends HttpServlet {
 
   private static final String VISITS_TODAY = "Visits Today";
+
+  // Define constants for "Visits Today" entity properties
   private static final String VISITS = "visits";
   private static final String DATE = "date";
   private static final String DAY_OF_WEEK = "dayOfWeek";
+  private static final String TIMESTAMP = "timestamp";
+
+  // Define constants for chart options (an enum might be a better choice)
   private static final int CHART_BY_DATE = 0;
   private static final int CHART_BY_WEEKDAY = 1;
 
@@ -118,7 +123,7 @@ public class PageVisitsServlet extends HttpServlet {
 
   private List<Entity> extractEntitiesByDate() {
     Query query = new Query(VISITS_TODAY).addSort(
-        "timestamp", Query.SortDirection.ASCENDING);
+        TIMESTAMP, Query.SortDirection.ASCENDING);
     return datastore.prepare(query).asList(FetchOptions.Builder.withDefaults());
   }
 
@@ -140,7 +145,7 @@ public class PageVisitsServlet extends HttpServlet {
     visitsEntity.setProperty(DATE, today.toString());
     visitsEntity.setProperty(DAY_OF_WEEK, calendar.get(Calendar.DAY_OF_WEEK));
     visitsEntity.setProperty(VISITS, 1L);
-    visitsEntity.setProperty("timestamp", timestamp);
+    visitsEntity.setProperty(TIMESTAMP, timestamp);
 
     return visitsEntity;
   }
