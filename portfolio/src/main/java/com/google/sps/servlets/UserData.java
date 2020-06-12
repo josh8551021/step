@@ -4,11 +4,8 @@ class UserData {
     private boolean isLoggedIn = false;
     private String email;
 
-    UserData(String email) {
-        if (!email.isEmpty()) {
-            this.isLoggedIn = true;
-        }
-
+    UserData(String email, boolean isLoggedIn) {
+        this.isLoggedIn = isLoggedIn;
         this.email = email;
     }
 }
