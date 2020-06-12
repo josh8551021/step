@@ -68,7 +68,7 @@ function getComments() {
 function deleteComments() {
   let doDeleteComments = confirm('Are you sure you want to delete all of the comments?');
 
-  if (doDeleteComments == true) {
+  if (doDeleteComments === true) {
     fetch('/delete-data', {
       method:'POST'
     }).then(response => response.json).then(_ => getComments());
@@ -102,4 +102,15 @@ function drawVisitDataChart() {
   const chart = new google.visualization.BarChart(
     document.getElementById('visit-data-container'));
   chart.draw(data, options);
+}
+
+function getUserLogin() {
+  fetch('login').then(response => response.json()).then((userData) => {
+    let loginElement = document.getElementById("user-name");
+    if (userData.isLoggedIn === false) {
+      loginElement.innerText = 'You are not logged in.';
+    } else {
+      loginElement.innerText = 'Hello ' + userData.email + '!';
+    }
+  });
 }

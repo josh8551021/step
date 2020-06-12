@@ -30,7 +30,7 @@ public class LoginServlet extends HttpServlet {
 
             response.getWriter().println(responseString);
         } else {
-            userData = new UserData("josh8551021@gmail.com");
+            userData = new UserData("");
 
             Gson gson = new Gson();
             String responseString = gson.toJson(userData);
