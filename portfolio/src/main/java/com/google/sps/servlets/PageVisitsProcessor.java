@@ -81,7 +81,6 @@ public class PageVisitsProcessor {
   }
 
   private Map<Integer, Long> mapVisitsPerWeekDay(List<Entity> visitEntities) {
-
     Map<Integer, Long> visitsByDayOfWeek = new HashMap<>();
     visitsByDayOfWeek.put(Calendar.SUNDAY, 0L);
     visitsByDayOfWeek.put(Calendar.MONDAY, 0L);
