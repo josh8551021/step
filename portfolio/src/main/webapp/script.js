@@ -32,33 +32,35 @@ function addRandomGreeting() {
  * page.
  */
 function getComments() {
-  // Extract the number of comments selected from the dropdown.
-  let numCommentsSelect = document.getElementById('num-comments');
-  let numCommentsString = numCommentsSelect.options[numCommentsSelect.selectedIndex].value;
+  if (getUserLogin() === false) {
+    // Extract the number of comments selected from the dropdown.
+    let numCommentsSelect = document.getElementById('num-comments');
+    let numCommentsString = numCommentsSelect.options[numCommentsSelect.selectedIndex].value;
 
-  // Create fetch string and perform GET request.
-  let searchParams = new URLSearchParams();
-  searchParams.append('num-comments', encodeURIComponent(numCommentsString));
-  fetch('/data?' + searchParams).then(response => response.json()).then((comments) => {
-    let commentsContainer = document.getElementById('comments-container');
+    // Create fetch string and perform GET request.
+    let searchParams = new URLSearchParams();
+    searchParams.append('num-comments', encodeURIComponent(numCommentsString));
+    fetch('/data?' + searchParams).then(response => response.json()).then((comments) => {
+      let commentsContainer = document.getElementById('comments-container');
 
-    // Reset comments continer.
-    commentsContainer.innerHTML = '';
+      // Reset comments continer.
+      commentsContainer.innerHTML = '';
 
-    comments.forEach((comment) => {
-      // Create HTML for comment.
-      let commentP = document.createElement("p");
-      commentP.innerHTML = comment;
+      comments.forEach((comment) => {
+        // Create HTML for comment.
+        let commentP = document.createElement("p");
+        commentP.innerHTML = comment;
 
-      // Add comment paragraph to comments-box div
-      let commentDiv = document.createElement('div');
-      commentDiv.classList.add('comments-box');
-      commentDiv.appendChild(commentP);
+        // Add comment paragraph to comments-box div
+        let commentDiv = document.createElement('div');
+        commentDiv.classList.add('comments-box');
+        commentDiv.appendChild(commentP);
 
-      // Add comment div to container.
-      commentsContainer.appendChild(commentDiv);
+        // Add comment div to container.
+        commentsContainer.appendChild(commentDiv);
+      });
     });
-  });
+  }
 }
 
 /**
@@ -66,12 +68,16 @@ function getComments() {
  * they want to take.
  */
 function deleteComments() {
-  let doDeleteComments = confirm('Are you sure you want to delete all of the comments?');
+  if (getUserLogin()) {
+    let doDeleteComments = confirm('Are you sure you want to delete all of the comments?');
 
-  if (doDeleteComments === true) {
-    fetch('/delete-data', {
-      method:'POST'
-    }).then(response => response.json()).then(_ => getComments());
+    if (doDeleteComments === true) {
+      fetch('/delete-data', {
+        method:'POST'
+      }).then(response => response.json()).then(_ => getComments());
+    }
+  } else {
+    alert("You must be logged in to delete comments.")
   }
 }
 
@@ -111,12 +117,29 @@ function drawVisitDataChart() {
 }
 
 function getUserLogin() {
+  let userLoggedIn = false;
   fetch('login').then(response => response.json()).then((userData) => {
     let loginElement = document.getElementById("user-name");
-    if (userData.isLoggedIn === false) {
+    userLoggedIn = userData.isLoggedIn;
+    if (userLoggedIn === false) {
       loginElement.innerText = 'You are not logged in.';
     } else {
       loginElement.innerText = 'Hello ' + userData.email + '!';
     }
   });
+  return userLoggedIn;
+}
+
+function startUpWebpage() {
+  countVisit();
+  let userLoggedIn = getUserLogin();
+  if (userLoggedIn === true) {
+    getComments();
+  } else {
+    let commentsContainer = document.getElementById('comments-container');
+    commentsContainer.innerHTML = '<p>You must be logged in to see comments.</p>';
+
+    let element = document.getElementById('comment-input-form-container');
+    element.hidden = true;
+  }
 }
