@@ -71,8 +71,14 @@ function deleteComments() {
   if (doDeleteComments === true) {
     fetch('/delete-data', {
       method:'POST'
-    }).then(response => response.json).then(_ => getComments());
+    }).then(response => response.json()).then(_ => getComments());
   }
+}
+
+function countVisit() {
+    fetch('/visit', {
+      method:'POST'
+    }).then(response => response.json());
 }
 
 // Code for adding chart using Google Charts API
