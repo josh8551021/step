@@ -93,6 +93,5 @@ public class PageVisitsServlet extends HttpServlet {
       datastore.delete(entity2Key);
       return entity1;
     }).orElse(entities.get(0));
-
   }
 }
