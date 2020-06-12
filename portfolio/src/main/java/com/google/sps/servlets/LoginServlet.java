@@ -35,4 +35,9 @@ public class LoginServlet extends HttpServlet {
         response.setContentType("application/json");
         response.getWriter().println(responseString);
     }
+
+    @Override
+    public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        response.sendRedirect("/");
+    }
 }
