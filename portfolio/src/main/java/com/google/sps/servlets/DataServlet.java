@@ -30,14 +30,14 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-/** Servlet that returns some example content. TODO: modify this file to handle comments data */
+/** Servlet that returns the requested number of user comments. */
 @WebServlet("/data")
 public class DataServlet extends HttpServlet {
 
   private static final int DEFAULT_MESSAGES = 10;
   private static final int MAX_MESSAGES = 50;
 
-  DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+  private final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
