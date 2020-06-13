@@ -32,7 +32,7 @@ function addRandomGreeting() {
  * page.
  */
 function getComments() {
-  if (getUserLogin() === false) {
+  if (getUserLogin()) {
     // Extract the number of comments selected from the dropdown.
     let numCommentsSelect = document.getElementById('num-comments');
     let numCommentsString = numCommentsSelect.options[numCommentsSelect.selectedIndex].value;
@@ -84,7 +84,7 @@ function deleteComments() {
 function countVisit() {
     fetch('/visit', {
       method:'POST'
-    }).then(response => response.json());
+    });
 }
 
 // Code for adding chart using Google Charts API
@@ -117,29 +117,30 @@ function drawVisitDataChart() {
 }
 
 function getUserLogin() {
-  let userLoggedIn = false;
-  fetch('login').then(response => response.json()).then((userData) => {
+  return fetch('login-check').then(response => response.json()).then((userData) => {
     let loginElement = document.getElementById("user-name");
     userLoggedIn = userData.isLoggedIn;
     if (userLoggedIn === false) {
-      loginElement.innerText = 'You are not logged in.';
+      loginElement.innerHTML = '<p>You are not logged in. Login <a href="/login">here</a>.</p>';
     } else {
-      loginElement.innerText = 'Hello ' + userData.email + '!';
+      loginElement.innerHTML = '<p>Hello ' + userData.email + '!' +
+          ' Logout <a href="/login">here</a>.</p>';
     }
+    return userLoggedIn;
   });
-  return userLoggedIn;
 }
 
 function startUpWebpage() {
   countVisit();
-  let userLoggedIn = getUserLogin();
-  if (userLoggedIn === true) {
-    getComments();
-  } else {
-    let commentsContainer = document.getElementById('comments-container');
-    commentsContainer.innerHTML = '<p>You must be logged in to see comments.</p>';
+  getUserLogin().then((loggedIn) => {
+    if (loggedIn) {
+      getComments();
+    } else {
+      let commentsContainer = document.getElementById('comments-container');
+      commentsContainer.innerHTML = '<p>You must be logged in to see comments.</p>';
 
-    let element = document.getElementById('comment-input-form-container');
-    element.hidden = true;
-  }
+      let element = document.getElementById('comment-input-form-container');
+      element.hidden = true;
+    }
+  });
 }
