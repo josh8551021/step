@@ -20,9 +20,12 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Query;
 
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gson.Gson;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.servlet.annotation.WebServlet;
@@ -41,14 +44,22 @@ public class DataServlet extends HttpServlet {
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    int numComments = getNumComments(request);
-    if (numComments == -1) {
-      numComments = DEFAULT_MESSAGES;
-    }
+    UserService userService = UserServiceFactory.getUserService();
 
-    numComments = Math.min(numComments, MAX_MESSAGES);
-    List<String> messages = getCommentEntities(datastore, numComments).stream().map(
-        entity -> entity.getProperty("text").toString()).collect(Collectors.toList());
+    List<String> messages;
+    if (userService.isUserLoggedIn()) {
+      int numComments = getNumComments(request);
+      if (numComments == -1) {
+        numComments = DEFAULT_MESSAGES;
+      }
+
+      numComments = Math.min(numComments, MAX_MESSAGES);
+      messages = getCommentEntities(datastore, numComments).stream().map(
+          entity -> entity.getProperty("text").toString()).collect(Collectors.toList());
+    } else {
+      messages = new ArrayList<>();
+      messages.add("You must be logged in to see messages.");
+    }
 
     response.setContentType("text/html;");
     response.getWriter().println(convertToJson(messages));
