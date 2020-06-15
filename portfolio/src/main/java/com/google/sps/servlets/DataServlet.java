@@ -58,7 +58,7 @@ public class DataServlet extends HttpServlet {
           entity -> entity.getProperty("text").toString()).collect(Collectors.toList());
     } else {
       messages = new ArrayList<>();
-      messages.add("You must be logged in to see messages.");
+      messages.add("You must be logged in to see comments.");
     }
 
     response.setContentType("text/html;");

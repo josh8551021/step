@@ -163,14 +163,10 @@ function getUserLogin() {
 function startUpWebpage() {
   countVisit();
   getUserLogin().then((loggedIn) => {
-    if (loggedIn) {
-      getComments();
-    } else {
-      let commentsContainer = document.getElementById('comments-container');
-      commentsContainer.innerHTML = '<p>You must be logged in to see comments.</p>';
-
+    if (!loggedIn) {
       let element = document.getElementById('comment-input-form-container');
       element.hidden = true;
     }
   });
+  getComments();
 }
