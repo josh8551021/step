@@ -32,35 +32,40 @@ function addRandomGreeting() {
  * page.
  */
 function getComments() {
-  if (getUserLogin()) {
-    // Extract the number of comments selected from the dropdown.
-    let numCommentsSelect = document.getElementById('num-comments');
-    let numCommentsString = numCommentsSelect.options[numCommentsSelect.selectedIndex].value;
+  // Extract the number of comments selected from the dropdown.
+  let numCommentsSelect = document.getElementById('num-comments');
+  let numCommentsString = numCommentsSelect.options[numCommentsSelect.selectedIndex].value;
 
-    // Create fetch string and perform GET request.
-    let searchParams = new URLSearchParams();
-    searchParams.append('num-comments', encodeURIComponent(numCommentsString));
-    fetch('/data?' + searchParams).then(response => response.json()).then((comments) => {
-      let commentsContainer = document.getElementById('comments-container');
+  // Create fetch string and perform GET request.
+  let searchParams = new URLSearchParams();
+  searchParams.append('num-comments', encodeURIComponent(numCommentsString));
+  fetch('/data?' + searchParams).then(function(response) {
+    console.log(response.status);
 
-      // Reset comments continer.
-      commentsContainer.innerHTML = '';
+    let commentsContainer = document.getElementById('comments-container');
+    if (response.ok) {
+      response.json().then((comments) => {
+        // Reset comments continer.
+        commentsContainer.innerHTML = '';
 
-      comments.forEach((comment) => {
-        // Create HTML for comment.
-        let commentP = document.createElement("p");
-        commentP.innerHTML = comment;
+        comments.forEach((comment) => {
+          // Create HTML for comment.
+          let commentP = document.createElement("p");
+          commentP.innerHTML = comment;
 
-        // Add comment paragraph to comments-box div
-        let commentDiv = document.createElement('div');
-        commentDiv.classList.add('comments-box');
-        commentDiv.appendChild(commentP);
+          // Add comment paragraph to comments-box div
+          let commentDiv = document.createElement('div');
+          commentDiv.classList.add('comments-box');
+          commentDiv.appendChild(commentP);
 
-        // Add comment div to container.
-        commentsContainer.appendChild(commentDiv);
+          // Add comment div to container.
+          commentsContainer.appendChild(commentDiv);
+        });
       });
-    });
-  }
+    } else {
+      commentsContainer.innerHTML = '<p>You must be logged in to see comments.</p>'
+    }
+  });
 }
 
 /**

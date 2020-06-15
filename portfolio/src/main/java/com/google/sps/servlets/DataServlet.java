@@ -46,7 +46,6 @@ public class DataServlet extends HttpServlet {
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     UserService userService = UserServiceFactory.getUserService();
 
-    List<String> messages;
     if (userService.isUserLoggedIn()) {
       int numComments = getNumComments(request);
       if (numComments == -1) {
@@ -54,15 +53,14 @@ public class DataServlet extends HttpServlet {
       }
 
       numComments = Math.min(numComments, MAX_MESSAGES);
-      messages = getCommentEntities(datastore, numComments).stream().map(
+      List<String> messages = getCommentEntities(datastore, numComments).stream().map(
           entity -> entity.getProperty("text").toString()).collect(Collectors.toList());
-    } else {
-      messages = new ArrayList<>();
-      messages.add("You must be logged in to see comments.");
-    }
 
-    response.setContentType("text/html;");
-    response.getWriter().println(convertToJson(messages));
+      response.setContentType("text/html;");
+      response.getWriter().println(convertToJson(messages));
+    } else {
+      response.setStatus(403);
+    }
   }
 
   private int getNumComments(HttpServletRequest request) {
@@ -82,8 +80,10 @@ public class DataServlet extends HttpServlet {
     UserService userService = UserServiceFactory.getUserService();
 
     if (userService.isUserLoggedIn()) {
+      String userEmail = userService.getCurrentUser().getEmail();
       String commentText = request.getParameter("comment-input");
-      Entity commentEntity = createCommentEntity(commentText);
+
+      Entity commentEntity = createCommentEntity(commentText, userEmail);
       datastore.put(commentEntity);
 
       response.sendRedirect("/index.html");
@@ -95,13 +95,14 @@ public class DataServlet extends HttpServlet {
     return gson.toJson(messages);
   }
 
-  private Entity createCommentEntity(String commentText) {
+  private Entity createCommentEntity(String commentText, String userEmail) {
     long timestamp = System.currentTimeMillis();
 
     Entity commentEntity = new Entity("Comment");
     commentEntity.setProperty("text", commentText);
+    commentEntity.setProperty("user", userEmail);
     commentEntity.setProperty("timestamp", timestamp);
-    
+
     return commentEntity;
   }
 
