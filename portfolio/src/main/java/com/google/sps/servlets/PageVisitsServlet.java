@@ -21,7 +21,6 @@ public class PageVisitsServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     // TODO: Process request max-days data
-
     String chartDataJson = processor.getDataJson(request);
 
     response.setContentType("application/json");
