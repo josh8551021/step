@@ -139,3 +139,14 @@ function drawVisitDayOfWeekChart() {
       chart.draw(data, options);
     });
 }
+
+function getUserLogin() {
+  fetch('login').then(response => response.json()).then((userData) => {
+    let loginElement = document.getElementById("user-name");
+    if (userData.isLoggedIn === false) {
+      loginElement.innerText = 'You are not logged in.';
+    } else {
+      loginElement.innerText = 'Hello ' + userData.email + '!';
+    }
+  });
+}
