@@ -63,8 +63,9 @@ function getComments() {
           // Add comment paragraph to comments-box div
           let commentDiv = document.createElement('div');
           commentDiv.classList.add('comments-box');
-          commentDiv.appendChild(commentP);
+
           commentDiv.appendChild(commentPosterDiv);
+          commentDiv.appendChild(commentP);
 
           // Add comment div to container.
           commentsContainer.appendChild(commentDiv);
