@@ -79,11 +79,15 @@ public class DataServlet extends HttpServlet {
 
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String commentText = request.getParameter("comment-input");
-    Entity commentEntity = createCommentEntity(commentText);
-    datastore.put(commentEntity);
+    UserService userService = UserServiceFactory.getUserService();
 
-    response.sendRedirect("/index.html");
+    if (userService.isUserLoggedIn()) {
+      String commentText = request.getParameter("comment-input");
+      Entity commentEntity = createCommentEntity(commentText);
+      datastore.put(commentEntity);
+
+      response.sendRedirect("/index.html");
+    }
   }
 
   private String convertToJson(List<String> messages) {
