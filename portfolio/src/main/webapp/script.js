@@ -81,12 +81,6 @@ function deleteComments() {
   }
 }
 
-function countVisit() {
-    fetch('/visit', {
-      method:'POST'
-    }).then(response => response.json()).then(data => console.log(data));
-}
-
 // Code for adding chart using Google Charts API
 google.charts.load('current', {'packages':['corechart']});
 google.charts.setOnLoadCallback(drawVisitDayOfWeekChart);
@@ -161,7 +155,12 @@ function getUserLogin() {
 }
 
 function startUpWebpage() {
-  countVisit();
+  // Count visit.
+  fetch('/visit', {
+    method:'POST'
+  });
+
+  // Check if logged in and get comments.
   getUserLogin().then((loggedIn) => {
     if (!loggedIn) {
       let element = document.getElementById('comment-input-form-container');
