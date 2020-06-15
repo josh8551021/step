@@ -90,11 +90,6 @@ public class DataServlet extends HttpServlet {
     }
   }
 
-  private String convertToJson(List<String> messages) {
-    Gson gson = new Gson();
-    return gson.toJson(messages);
-  }
-
   private Entity createCommentEntity(String commentText, String userEmail) {
     long timestamp = System.currentTimeMillis();
 
