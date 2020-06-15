@@ -53,11 +53,17 @@ public class DataServlet extends HttpServlet {
       }
 
       numComments = Math.min(numComments, MAX_MESSAGES);
-      List<String> messages = getCommentEntities(datastore, numComments).stream().map(
-          entity -> entity.getProperty("text").toString()).collect(Collectors.toList());
+      List<Comment> messages = getCommentEntities(datastore, numComments).stream().map(
+          entity -> new Comment(
+              entity.getProperty("text").toString(),
+              entity.getProperty("user").toString()
+          )).collect(Collectors.toList());
+
+      Gson gson = new Gson();
+      String commentsJson = gson.toJson(messages);
 
       response.setContentType("text/html;");
-      response.getWriter().println(convertToJson(messages));
+      response.getWriter().println(commentsJson);
     } else {
       response.setStatus(403);
     }
