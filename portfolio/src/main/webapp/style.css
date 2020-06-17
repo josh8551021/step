@@ -141,7 +141,7 @@ button {
 }
 
 .comment-poster-name {
-  float: right;
   color: #ccc;
+  float: right;
   max-width: 30%;
 }
