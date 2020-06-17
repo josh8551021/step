@@ -40,8 +40,6 @@ function getComments() {
   let searchParams = new URLSearchParams();
   searchParams.append('num-comments', encodeURIComponent(numCommentsString));
   fetch('/data?' + searchParams).then(function(response) {
-    console.log(response.status);
-
     let commentsContainer = document.getElementById('comments-container');
     if (response.ok) {
       response.json().then((comments) => {
