@@ -20,9 +20,12 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Query;
 
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gson.Gson;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.servlet.annotation.WebServlet;
@@ -41,17 +44,23 @@ public class DataServlet extends HttpServlet {
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    int numComments = getNumComments(request);
-    if (numComments == -1) {
-      numComments = DEFAULT_MESSAGES;
+    UserService userService = UserServiceFactory.getUserService();
+
+    if (userService.isUserLoggedIn()) {
+      int numComments = getNumComments(request);
+      if (numComments == -1) {
+        numComments = DEFAULT_MESSAGES;
+      }
+
+      numComments = Math.min(numComments, MAX_MESSAGES);
+      List<String> messages = getCommentEntities(datastore, numComments).stream().map(
+          entity -> entity.getProperty("text").toString()).collect(Collectors.toList());
+
+      response.setContentType("text/html;");
+      response.getWriter().println(convertToJson(messages));
+    } else {
+      response.setStatus(403);
     }
-
-    numComments = Math.min(numComments, MAX_MESSAGES);
-    List<String> messages = getCommentEntities(datastore, numComments).stream().map(
-        entity -> entity.getProperty("text").toString()).collect(Collectors.toList());
-
-    response.setContentType("text/html;");
-    response.getWriter().println(convertToJson(messages));
   }
 
   private int getNumComments(HttpServletRequest request) {
@@ -68,11 +77,19 @@ public class DataServlet extends HttpServlet {
 
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String commentText = request.getParameter("comment-input");
-    Entity commentEntity = createCommentEntity(commentText);
-    datastore.put(commentEntity);
+    UserService userService = UserServiceFactory.getUserService();
 
-    response.sendRedirect("/index.html");
+    if (userService.isUserLoggedIn()) {
+      String userEmail = userService.getCurrentUser().getEmail();
+      String commentText = request.getParameter("comment-input");
+
+      Entity commentEntity = createCommentEntity(commentText, userEmail);
+      datastore.put(commentEntity);
+
+      response.sendRedirect("/index.html");
+    } else {
+      response.setStatus(403);
+    }
   }
 
   private String convertToJson(List<String> messages) {
@@ -80,13 +97,14 @@ public class DataServlet extends HttpServlet {
     return gson.toJson(messages);
   }
 
-  private Entity createCommentEntity(String commentText) {
+  private Entity createCommentEntity(String commentText, String userEmail) {
     long timestamp = System.currentTimeMillis();
 
     Entity commentEntity = new Entity("Comment");
     commentEntity.setProperty("text", commentText);
+    commentEntity.setProperty("user", userEmail);
     commentEntity.setProperty("timestamp", timestamp);
-    
+
     return commentEntity;
   }
 

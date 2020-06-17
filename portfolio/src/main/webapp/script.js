@@ -39,25 +39,30 @@ function getComments() {
   // Create fetch string and perform GET request.
   let searchParams = new URLSearchParams();
   searchParams.append('num-comments', encodeURIComponent(numCommentsString));
-  fetch('/data?' + searchParams).then(response => response.json()).then((comments) => {
+  fetch('/data?' + searchParams).then(function(response) {
     let commentsContainer = document.getElementById('comments-container');
+    if (response.ok) {
+      response.json().then((comments) => {
+        // Reset comments continer.
+        commentsContainer.innerHTML = '';
 
-    // Reset comments continer.
-    commentsContainer.innerHTML = '';
+        comments.forEach((comment) => {
+          // Create HTML for comment.
+          let commentP = document.createElement("p");
+          commentP.innerHTML = comment;
 
-    comments.forEach((comment) => {
-      // Create HTML for comment.
-      let commentP = document.createElement("p");
-      commentP.innerHTML = comment;
+          // Add comment paragraph to comments-box div
+          let commentDiv = document.createElement('div');
+          commentDiv.classList.add('comments-box');
+          commentDiv.appendChild(commentP);
 
-      // Add comment paragraph to comments-box div
-      let commentDiv = document.createElement('div');
-      commentDiv.classList.add('comments-box');
-      commentDiv.appendChild(commentP);
-
-      // Add comment div to container.
-      commentsContainer.appendChild(commentDiv);
-    });
+          // Add comment div to container.
+          commentsContainer.appendChild(commentDiv);
+        });
+      });
+    } else {
+      commentsContainer.innerHTML = '<p>You must be logged in to see comments.</p>'
+    }
   });
 }
 
@@ -66,19 +71,17 @@ function getComments() {
  * they want to take.
  */
 function deleteComments() {
-  let doDeleteComments = confirm('Are you sure you want to delete all of the comments?');
+  if (getUserLogin()) {
+    let doDeleteComments = confirm('Are you sure you want to delete all of the comments?');
 
-  if (doDeleteComments === true) {
-    fetch('/delete-data', {
-      method:'POST'
-    }).then(response => response.json()).then(_ => getComments());
+    if (doDeleteComments === true) {
+      fetch('/delete-data', {
+        method:'POST'
+      }).then(response => response.json()).then(_ => getComments());
+    }
+  } else {
+    alert("You must be logged in to delete comments.")
   }
-}
-
-function countVisit() {
-    fetch('/visit', {
-      method:'POST'
-    }).then(response => response.json()).then(data => console.log(data));
 }
 
 // Code for adding chart using Google Charts API
@@ -141,12 +144,31 @@ function drawVisitDayOfWeekChart() {
 }
 
 function getUserLogin() {
-  fetch('login').then(response => response.json()).then((userData) => {
+  return fetch('login-check').then(response => response.json()).then((userData) => {
     let loginElement = document.getElementById("user-name");
-    if (userData.isLoggedIn === false) {
-      loginElement.innerText = 'You are not logged in.';
+    userLoggedIn = userData.isLoggedIn;
+    if (userLoggedIn === false) {
+      loginElement.innerHTML = '<p>You are not logged in. Login <a href="/login">here</a>.</p>';
     } else {
-      loginElement.innerText = 'Hello ' + userData.email + '!';
+      loginElement.innerHTML = '<p>Hello ' + userData.email + '!' +
+          ' Logout <a href="/login">here</a>.</p>';
+    }
+    return userLoggedIn;
+  });
+}
+
+function startUpWebpage() {
+  // Count visit.
+  fetch('/visit', {
+    method:'POST'
+  });
+
+  // Check if logged in and get comments.
+  getUserLogin().then((loggedIn) => {
+    if (!loggedIn) {
+      let element = document.getElementById('comment-input-form-container');
+      element.hidden = true;
     }
   });
+  getComments();
 }
