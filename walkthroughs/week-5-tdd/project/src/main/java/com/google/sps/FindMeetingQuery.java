@@ -14,10 +14,97 @@
 
 package com.google.sps;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public final class FindMeetingQuery {
   public Collection<TimeRange> query(Collection<Event> events, MeetingRequest request) {
-    throw new UnsupportedOperationException("TODO: Implement this method.");
+    List<TimeRange> meetingTimesReq = new ArrayList<>();
+    meetingTimesReq.add(TimeRange.WHOLE_DAY);
+    List<TimeRange> meetingTimesOpt = new ArrayList<>();
+    meetingTimesOpt.add(TimeRange.WHOLE_DAY);
+
+    if (request.getDuration() > TimeRange.WHOLE_DAY.duration()) {
+      return Collections.emptyList();
+    }
+
+    // Mark unavailable times unavailable
+    Collection<String> meetingAttendees = request.getAttendees();
+    Collection<String> optionalAttendees = request.getOptionalAttendees();
+    for (Event event : events) {
+      Collection<String> eventAttendees = event.getAttendees();
+
+      for (String eventAttendee : eventAttendees) {
+        // Make sure all required attendees can make meeting
+        for (String meetingAttendee : meetingAttendees) {
+          if (eventAttendee.equals(meetingAttendee)) {
+            removeTimeRangeFromFreePeriods(meetingTimesReq, event.getWhen());
+            removeTimeRangeFromFreePeriods(meetingTimesOpt, event.getWhen());
+          }
+        }
+
+        // Include optional attendees, if possible
+        for (String optionalAttendee : optionalAttendees) {
+          if (eventAttendee.equals(optionalAttendee)) {
+            removeTimeRangeFromFreePeriods(meetingTimesOpt, event.getWhen());
+          }
+        }
+      }
+    }
+
+    Collection<TimeRange> meetingTimesWithOptional = meetingTimesOpt.stream().filter(meetingTime ->
+        meetingTime.duration() >= request.getDuration()).collect(Collectors.toList());
+
+    // Use optional times because no regular attendees
+    if (meetingAttendees.isEmpty()) {
+      return meetingTimesWithOptional;
+    }
+
+    // Meet without optionals because no otherwise available time.
+    if (meetingTimesWithOptional.isEmpty()) {
+      return meetingTimesReq.stream().filter(meetingTime ->
+          meetingTime.duration() >= request.getDuration()).collect(Collectors.toList());
+    }
+
+    return meetingTimesWithOptional;
+  }
+
+  private void removeTimeRangeFromFreePeriods(List<TimeRange> freePeriods, TimeRange toRemove) {
+    Collection<TimeRange> overlappingTimes = new HashSet<>();
+    Collection<TimeRange> shortenedFreePeriods = new HashSet<>();
+    freePeriods.forEach(freePeriod -> {
+      if (freePeriod.overlaps(toRemove)) {
+        shortenedFreePeriods.addAll(removeFreeChunk(freePeriod, toRemove));
+        overlappingTimes.add(freePeriod);
+      }
+    });
+
+    shortenedFreePeriods.forEach(period -> addRangeInPlace(freePeriods, period));
+    freePeriods.removeAll(overlappingTimes);
+  }
+
+  private static void addRangeInPlace(List<TimeRange> timeRanges, TimeRange toAdd) {
+    for (int i = 0; i < timeRanges.size(); i++) {
+      if (timeRanges.get(i).start() > toAdd.start()) {
+        timeRanges.add(i, toAdd);
+        return;
+      }
+    }
+    timeRanges.add(toAdd);
+  }
+
+  private Collection<TimeRange> removeFreeChunk(TimeRange freePeriod, TimeRange toRemove) {
+    Collection<TimeRange> newChunks = new ArrayList<>();
+    if (freePeriod.start() < toRemove.start()) {
+      newChunks.add(TimeRange.fromStartEnd(freePeriod.start(), toRemove.start(), false));
+    }
+    if (freePeriod.end() > toRemove.end()) {
+      newChunks.add(TimeRange.fromStartEnd(toRemove.end(), freePeriod.end(), false));
+    }
+    return newChunks;
   }
 }
