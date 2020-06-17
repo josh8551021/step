@@ -42,18 +42,27 @@ function getComments() {
   fetch('/data?' + searchParams).then(function(response) {
     let commentsContainer = document.getElementById('comments-container');
     if (response.ok) {
-      response.json().then((comments) => {
+      response.json().then((commentBundles) => {
         // Reset comments continer.
         commentsContainer.innerHTML = '';
 
-        comments.forEach((comment) => {
+        commentBundles.forEach((commentBundle) => {
+          let message = commentBundle.message;
+          let userEmail = commentBundle.userEmail;
+
           // Create HTML for comment.
           let commentP = document.createElement("p");
-          commentP.innerHTML = comment;
+          commentP.innerHTML = message;
+
+          let commentPosterDiv = document.createElement("div");
+          commentPosterDiv.classList.add('comment-poster-name');
+          commentPosterDiv.innerText = 'Posted by ' + userEmail;
 
           // Add comment paragraph to comments-box div
           let commentDiv = document.createElement('div');
           commentDiv.classList.add('comments-box');
+
+          commentDiv.appendChild(commentPosterDiv);
           commentDiv.appendChild(commentP);
 
           // Add comment div to container.
