@@ -17,6 +17,7 @@ package com.google.sps;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,40 +38,32 @@ public final class FindMeetingQuery {
     Collection<String> optionalAttendees = request.getOptionalAttendees();
     for (Event event : events) {
       Collection<String> eventAttendees = event.getAttendees();
+      if (!Collections.disjoint(eventAttendees, meetingAttendees)) {
+        removeTimeRangeFromFreePeriods(meetingTimesReq, event.getWhen());
+        removeTimeRangeFromFreePeriods(meetingTimesOpt, event.getWhen());
+      }
 
-      for (String eventAttendee : eventAttendees) {
-        // Make sure all required attendees can make meeting
-        for (String meetingAttendee : meetingAttendees) {
-          if (eventAttendee.equals(meetingAttendee)) {
-            removeTimeRangeFromFreePeriods(meetingTimesReq, event.getWhen());
-            removeTimeRangeFromFreePeriods(meetingTimesOpt, event.getWhen());
-          }
-        }
-
-        // Include optional attendees, if possible
-        for (String optionalAttendee : optionalAttendees) {
-          if (eventAttendee.equals(optionalAttendee)) {
-            removeTimeRangeFromFreePeriods(meetingTimesOpt, event.getWhen());
-          }
-        }
+      if (!Collections.disjoint(eventAttendees, optionalAttendees)) {
+        removeTimeRangeFromFreePeriods(meetingTimesOpt, event.getWhen());
       }
     }
 
-    Collection<TimeRange> meetingTimesWithOptional = meetingTimesOpt.stream().filter(meetingTime ->
+    List<TimeRange> meetingTimesWithOptional = meetingTimesOpt.stream().filter(meetingTime ->
         meetingTime.duration() >= request.getDuration()).collect(Collectors.toList());
+    List<TimeRange> meetingTimesWithoutOptional = meetingTimesReq.stream()
+        .filter(meetingTime -> meetingTime.duration() >= request.getDuration())
+        .collect(Collectors.toList());
 
-    // Use optional times because no regular attendees
-    if (meetingAttendees.isEmpty()) {
-      return meetingTimesWithOptional;
+    List<TimeRange> meetingTimesToUse = meetingTimesWithOptional;
+
+    if (meetingTimesWithOptional.isEmpty() && !meetingAttendees.isEmpty()) {
+      meetingTimesToUse = meetingTimesWithoutOptional;
     }
 
-    // Meet without optionals because no otherwise available time.
-    if (meetingTimesWithOptional.isEmpty()) {
-      return meetingTimesReq.stream().filter(meetingTime ->
-          meetingTime.duration() >= request.getDuration()).collect(Collectors.toList());
-    }
+    Comparator<TimeRange> timeRangeComparator = Comparator.comparing(TimeRange::start);
+    meetingTimesToUse.sort(timeRangeComparator);
 
-    return meetingTimesWithOptional;
+    return meetingTimesToUse;
   }
 
   private void removeTimeRangeFromFreePeriods(List<TimeRange> freePeriods, TimeRange toRemove) {
@@ -83,18 +76,8 @@ public final class FindMeetingQuery {
       }
     });
 
-    shortenedFreePeriods.forEach(period -> addRangeInPlace(freePeriods, period));
+    freePeriods.addAll(shortenedFreePeriods);
     freePeriods.removeAll(overlappingTimes);
-  }
-
-  private static void addRangeInPlace(List<TimeRange> timeRanges, TimeRange toAdd) {
-    for (int i = 0; i < timeRanges.size(); i++) {
-      if (timeRanges.get(i).start() > toAdd.start()) {
-        timeRanges.add(i, toAdd);
-        return;
-      }
-    }
-    timeRanges.add(toAdd);
   }
 
   private Collection<TimeRange> removeFreeChunk(TimeRange freePeriod, TimeRange toRemove) {
