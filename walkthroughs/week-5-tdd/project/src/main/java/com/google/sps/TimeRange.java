@@ -171,7 +171,7 @@ public final class TimeRange {
   /**
    * Creates a {@code TimeRange} from {@code start} to {@code end}. Whether or not {@code end} is
    * included in the range will depend on {@code inclusive}. If {@code inclusive} is {@code true},
-   * then @{code end} will be in the range.
+   * then {@code end} will be in the range.
    */
   public static TimeRange fromStartEnd(int start, int end, boolean inclusive) {
     return inclusive ? new TimeRange(start, end - start + 1) : new TimeRange(start, end - start);
